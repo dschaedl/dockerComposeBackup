@@ -1,0 +1,34 @@
+version : "3"
+services:
+  grafana:
+    image: "grafana/grafana:master"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_INSTALL_PLUGINS=natel-discrete-panel
+      - GF_SECURITY_ADMIN_PASSWORD=<secret password>
+    deploy:
+      labels:
+        - "traefik.http.routers.grafana.rule=Host(`<prefix>.ddnss.ch`)"
+        - "traefik.http.routers.grafana.entryPoints=secure"
+        - "traefik.http.routers.grafana.tls"
+        - "traefik.http.routers.grafana.tls.certResolver=certs"
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+        - "traefik.docker.network=web"
+    volumes:
+      - grafana:/var/lib/grafana
+    networks:
+      - web
+      - monitoring
+
+volumes:
+  grafana:
+
+networks:
+  web:
+    external:
+      name: web
+  monitoring:
+    external:
+      name: monitoring
+  

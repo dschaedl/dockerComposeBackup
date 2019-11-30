@@ -1,0 +1,53 @@
+version : "3"
+services:
+  iobroker:
+    image: "buanet/iobroker:latest"
+    ports:
+      - "8191:8081"
+      - "9090:9000"
+      - "9091:9001"
+      - "8092:8082"
+      - "8093:8083"
+      - "8094:8084"
+      - "12001:12001"
+      - "12010:12010"
+    environment:
+      - "AVAHI=false"
+    deploy:
+      labels:
+        - "traefik.docker.network=web"
+        - "traefik.http.routers.iobroker.service=iobroker"
+        - "traefik.http.routers.iobroker.rule=Host(`<prefix>.ddnss.ch`)"
+        - "traefik.http.middlewares.auth_iob.basicauth.users=user:<hash>"
+        - "traefik.http.services.iobroker.loadbalancer.server.port=8081"
+        - "traefik.http.routers.iobroker.entryPoints=secure"
+        - "traefik.http.routers.iobroker.tls"
+        - "traefik.http.routers.iobroker.tls.certResolver=certs"
+        - "traefik.http.routers.iobroker.middlewares=auth_iob"
+        - "traefik.http.routers.geof.service=geof"
+        - "traefik.http.routers.geof.rule=Host(`<prefix>.ddnss.ch`)"
+        - "traefik.http.middlewares.auth_geo.basicauth.users=user:<hash>"
+        - "traefik.http.services.geof.loadbalancer.server.port=7999"
+        - "traefik.http.routers.geof.entryPoints=secure"
+        - "traefik.http.routers.geof.tls"
+        - "traefik.http.routers.geof.tls.certResolver=certs"
+        - "traefik.http.routers.geof.middlewares=auth_geo"
+
+        
+    volumes:
+      - iobroker:/opt/iobroker/iobroker-data
+    networks:
+      - web
+      - home_automation
+
+volumes:
+  iobroker:
+
+networks:
+  web:
+    external:
+      name: web
+  home_automation:
+    external:
+      name: home_automation
+  
